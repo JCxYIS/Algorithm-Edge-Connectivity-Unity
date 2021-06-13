@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 8559793978352780791}
   - component: {fileID: 8559793978352780790}
   - component: {fileID: 8064325044012034733}
+  - component: {fileID: -9169951205530713830}
+  - component: {fileID: -2728537674656895500}
   m_Layer: 0
   m_Name: Vertice
   m_TagString: Untagged
@@ -96,7 +98,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   id: 0
-  edges: 
+  edges: []
+--- !u!58 &-9169951205530713830
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8559793978352780793}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.1
+--- !u!114 &-2728537674656895500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8559793978352780793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88d3643f3f23d5b49ba8d52785d76242, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8559793979266392889
 GameObject:
   m_ObjectHideFlags: 0
