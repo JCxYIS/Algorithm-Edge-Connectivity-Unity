@@ -17,8 +17,8 @@ public class GameManager : MonoBehaviour
     public Rect boundries;    
 
     [Header("Runtime")]
-    public Dictionary<int, Vertex> vertex = new Dictionary<int, Vertex>();
-    public List<GameObject> edges = new List<GameObject>();
+    public Dictionary<int, Vertex> vertices = new Dictionary<int, Vertex>();
+    public List<Edge> edges = new List<Edge>();
 
 
     /// <summary>
@@ -43,13 +43,13 @@ public class GameManager : MonoBehaviour
 
     private void Clear()
     {
-        foreach(var v in vertex)
+        foreach(var v in vertices)
             Destroy(v.Value.gameObject);
         foreach(var e in edges)
             Destroy(e);
 
-        vertex = new Dictionary<int, Vertex>();
-        edges = new List<GameObject>();
+        vertices = new Dictionary<int, Vertex>();
+        edges = new List<Edge>();
     }
 
     public void HandleInput()
@@ -74,11 +74,11 @@ public class GameManager : MonoBehaviour
                 int from = int.Parse(value[0]);
                 int dest = int.Parse(value[1]);
 
-                if(!vertex.ContainsKey(from))
+                if(!vertices.ContainsKey(from))
                 {
                     CreateVertex(from);
                 }
-                if(!vertex.ContainsKey(dest))
+                if(!vertices.ContainsKey(dest))
                 {
                     CreateVertex(dest);
                 }
@@ -101,7 +101,7 @@ public class GameManager : MonoBehaviour
         Vertex v = g.GetComponent<Vertex>();
         v.id = id;
         v.SetRandomPos();
-        vertex.Add(id, v);
+        vertices.Add(id, v);
 
         Debug.Log($"Create {g.name}");
         return v;
@@ -113,7 +113,8 @@ public class GameManager : MonoBehaviour
         g.name = $"Edge {from}-{dest}";
 
         Edge e = g.GetComponent<Edge>();
-        e.Init(vertex[from], vertex[dest]);
+        e.Init(vertices[from], vertices[dest]);
+        edges.Add(e);
 
         Debug.Log($"Create {g.name}");
     }
