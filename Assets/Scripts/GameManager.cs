@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -46,7 +47,7 @@ public class GameManager : MonoBehaviour
         foreach(var v in vertices)
             Destroy(v.Value.gameObject);
         foreach(var e in edges)
-            Destroy(e);
+            Destroy(e.gameObject);
 
         vertices = new Dictionary<int, Vertex>();
         edges = new List<Edge>();
@@ -96,7 +97,7 @@ public class GameManager : MonoBehaviour
     private Vertex CreateVertex(int id)
     {
         GameObject g = Instantiate(vertexPrefab);
-        g.name = $"Vertice {id}";
+        g.name = $"Vertex {id}";
 
         Vertex v = g.GetComponent<Vertex>();
         v.id = id;
@@ -113,11 +114,20 @@ public class GameManager : MonoBehaviour
         g.name = $"Edge {from}-{dest}";
 
         Edge e = g.GetComponent<Edge>();
-        e.Init(vertices[from], vertices[dest]);
+        e.Init(false, vertices[from], vertices[dest], 1); // TODO 如果這個project有要繼續下去的話，這裡要改 
         edges.Add(e);
 
         Debug.Log($"Create {g.name}");
     }
 
     
+    public void PlayFordFulker()
+    {
+        gameObject.AddComponent<FordFulkerson>();
+    }
+
+    public void Restart()
+    {
+        SceneManager.LoadScene("Main");
+    }
 }

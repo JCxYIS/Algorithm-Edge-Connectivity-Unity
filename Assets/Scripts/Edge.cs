@@ -5,10 +5,43 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class Edge : MonoBehaviour
 {
-    public Vertex from;
-    public Vertex dest;
+    // Algo var
+    /// <summary>
+    /// 是否帶有方向？
+    /// </summary>
+    public bool isDirected {get; protected set;}
+    
+    /// <summary>
+    /// 起點
+    /// </summary>
+    public Vertex from {get; protected set;}
 
-    LineRenderer line;
+    /// <summary>
+    /// 終點
+    /// </summary>
+    public Vertex dest {get; protected set;}
+
+    /// <summary>
+    /// 館子最大流量。無權重圖為 1
+    /// </summary>
+    public int weight {get; protected set;}
+
+
+
+    // var
+    public enum Behavior {Idle, Flash}
+    public Behavior behavior = Behavior.Idle;
+    public Color color = Color.white;
+
+    // GAME OBJECTS
+    LineRenderer lineRenderer;
+    [HideInInspector] public TextMesh weight_Text;
+
+
+    /// <summary>
+    /// (Flow Chart) 管子最大容量
+    /// </summary>
+    public int capacity => weight;
 
 
     /// <summary>
@@ -17,20 +50,45 @@ public class Edge : MonoBehaviour
     /// </summary>
     void Start()
     {
-        line = GetComponent<LineRenderer>();
+        lineRenderer = GetComponent<LineRenderer>();
+        weight_Text = transform.GetChild(0).GetComponent<TextMesh>();
     }
     // Update is called once per frame
     void Update()
     {
-        line.SetPosition(0, from.transform.position);
-        line.SetPosition(1, dest.transform.position);
+        lineRenderer.SetPosition(0, from.transform.position);
+        lineRenderer.SetPosition(1, dest.transform.position);
+        lineRenderer.startColor = color;
+        lineRenderer.endColor = color;
+        
+        // TODO directed
+
+        weight_Text.transform.position = (from.transform.position + dest.transform.position) / 2f + Vector3.up * 0.48763f;
+        weight_Text.text = weight.ToString();
+        weight_Text.color = color;
     }
 
-    public void Init(Vertex from, Vertex dest)
+
+
+    public void Init(bool directed, Vertex from, Vertex dest, int weight = 1)
     {
+        this.isDirected = directed;
         this.from = from;
         this.dest = dest;
-        from.AddEdge(this);
-        dest.AddEdge(this);
+        this.weight = weight;
+
+        from.AddEdge(this);        
+        if(!isDirected)
+            dest.AddEdge(this);
+    }
+
+    public void SetColor(Color color)
+    {
+        this.color = color;
+    }
+
+    public void SetBehavior(Behavior behavior)
+    {
+        this.behavior = behavior;
     }
 }
