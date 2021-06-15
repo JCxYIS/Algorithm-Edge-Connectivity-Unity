@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public abstract class Algorithm : MonoBehaviour
 {
@@ -8,6 +9,9 @@ public abstract class Algorithm : MonoBehaviour
 
     protected Dictionary<int, Vertex> vertices => gameManager.vertices;
     protected List<Edge> edges => gameManager.edges;
+
+    private Text[] text_lt => gameManager.text_lt;
+    private Text text_rb => gameManager.text_rb;
 
 
 
@@ -28,7 +32,18 @@ public abstract class Algorithm : MonoBehaviour
     protected void Log(string log)
     {
         Debug.Log($"<color=cyan>{log}</color>");
-        // TODO 文字log
+
+        for(int i = text_lt.Length-1; i > 0 ; i--)
+        {            
+            text_lt[i].text = text_lt[i-1].text;
+        }
+        text_lt[0].text = log;
+    }
+
+    protected void LogRB(string text)
+    {
+        Debug.Log($"<color=green>{text}</color>");
+        text_rb.text = text;
     }
 
     protected abstract void Init();

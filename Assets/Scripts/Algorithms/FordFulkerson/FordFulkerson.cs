@@ -42,36 +42,35 @@ public class FordFulkerson : Algorithm
     }
 
     protected override IEnumerator Play()
-    {
-        
-
-        
-
-
+    {        
         Log("讓我們開始吧");
         
-            // find Gf 
-            // residualGraph = FindResidualGraph();
-
+        // find Gf 
+        // residualGraph = FindResidualGraph();
             
         // O(n) max flow computations are sufficient for finding a min cut. (ex. 26.2-11)
         // Fix a node v, iterating all possible w != v and compute maximum flow
         Log($"鎖定點 {residualGraph[0]} 為出發點，尋找其至每個點的 Max Flow / Min Cut");
-        int max_maxFlow = 0;        
+        int min_maxFlow = int.MaxValue; 
+        List<FordFulkersonEdge> min_maxFlow_path = null;       
         for(int i = 0; i < residualGraph.Count; i++)
         {
+            if(i == 0) // self
+                continue;
+
             // clear all flow
             residualGraph.ForEach(vertex=>{
-                vertex.edges.ForEach(e=>e.flow = 0);
+                vertex.edges.ForEach(e=>{e.flow = 0;e.meta.SetColor(Color.white);});
                 vertex.meta.SetColor(Color.white);
             });
             totalFlow = 0;
             residualGraph[0].meta.SetColor(Color.green);
             residualGraph[i].meta.SetColor(Color.red);
+            LogRB("-/"+min_maxFlow);
             yield return new WaitForSeconds(1);
             
 
-            Log($"第 {i}/{residualGraph.Count-1} 找！{residualGraph[0]} 至 {residualGraph[i]}");
+            Log($"第 {i}/{residualGraph.Count-1} 輪！{residualGraph[0]} 至 {residualGraph[i]}");
             while(true) // exists p in Gf
             {
                 Log($"尋找 {residualGraph[0]} 至 {residualGraph[i]} 的 Augmenting Path");
@@ -81,21 +80,26 @@ public class FordFulkerson : Algorithm
                 if(augmentingPath == null || augmentingPath.Count == 0)
                 {
                     Log("找不到可以增廣的 Augmenting Path，本找結束");
-                    if(totalFlow > max_maxFlow)
+                    if(totalFlow < min_maxFlow)
                     {
-                        max_maxFlow = totalFlow;
-                        Log($"刷新最大 max flow 為 {max_maxFlow}");
+                        min_maxFlow = totalFlow;                                               
+                        Log($"刷新最小 max flow 為 {min_maxFlow}，藍色線為 minimum Cut");
+                        min_maxFlow_path = DFSFindMinimumCut(residualGraph[0], residualGraph[i]);
+                        min_maxFlow_path.ForEach(e=>{
+                            e.meta.SetColor(Color.blue);
+                        });
                     }
                     else
                     {
                         Log($"max flow 為 {totalFlow}");
                     }
+                    LogRB(totalFlow+"/"+min_maxFlow);
                     yield return new WaitForSeconds(1);
                     break;
                 }
                 else
                 {
-                    string log = "為 ";                
+                    string log = "找到 ";                
                     augmentingPath.ForEach(e=>{
                         e.meta.SetColor(Color.magenta);
                         log += e.ToString()+" ";
@@ -118,11 +122,18 @@ public class FordFulkerson : Algorithm
                     // // cf(v, u) += Cf(p)
                 }                
 
-                Log("完成一輪，進行下一輪");
+                Log("找下一個路徑");
                 yield return new WaitForSeconds(1);
             }            
         }
-        Log("演算法結束。最大Max Flow 為 "+max_maxFlow);
+        Log("演算法結束。");
+        string output="";
+        output += min_maxFlow;
+        foreach(FordFulkersonEdge e in min_maxFlow_path)
+        {
+            e.meta.SetColor(Color.green);
+        }
+        LogRB($"<color=green>{output}</color>");
 
         // throw new System.NotImplementedException();
     }
@@ -184,6 +195,13 @@ public class FordFulkerson : Algorithm
                     parent[dest] = nowedge;
                     bfsqueue.Enqueue(dest);
                 }
+                dest = nowedge.meta.from.GetComponent<FordFulkersonVertex>(); // 反向也算
+                if(!visited[dest])
+                {
+                    visited[dest] = true;
+                    parent[dest] = nowedge;
+                    bfsqueue.Enqueue(dest);
+                }
             }            
         }
 
@@ -194,7 +212,9 @@ public class FordFulkerson : Algorithm
         for(FordFulkersonVertex now = sink; now != source; )
         {
             path.Add(parent[now]);
-            now = parent[now].meta.from.GetComponent<FordFulkersonVertex>();
+            now = parent[now].meta.from == now.meta ? 
+                parent[now].meta.dest.GetComponent<FordFulkersonVertex>() :
+                parent[now].meta.from.GetComponent<FordFulkersonVertex>();
         }
         return path;
     }
@@ -243,5 +263,51 @@ public class FordFulkerson : Algorithm
         }
 
         return currentMin;
+    }
+
+    List<FordFulkersonEdge> DFSFindMinimumCut(FordFulkersonVertex source, FordFulkersonVertex sink)
+    {
+        // dfs for software engineers!
+        Stack<FordFulkersonVertex> dfsstack = new Stack<FordFulkersonVertex>();
+        dfsstack.Push(source);
+
+        // 從源點開始沿著剩餘網路的前向弧搜索,直到找到每條路徑的第一條容量為 0 的弧, 而那些弧就會是最小割集。
+        List<FordFulkersonEdge> found = new List<FordFulkersonEdge>();
+
+        // visited dict
+        Dictionary<FordFulkersonVertex, bool> visited = new Dictionary<FordFulkersonVertex, bool>();
+        foreach(var v in residualGraph)
+        {
+            visited.Add(v, false);
+        }
+
+        // loop
+        while(dfsstack.Count != 0)
+        {
+            FordFulkersonVertex now = dfsstack.Pop();
+            foreach(FordFulkersonEdge nowedge in now.edges)
+            {
+                FordFulkersonVertex dest = nowedge.meta.dest.GetComponent<FordFulkersonVertex>();
+                if(!visited[dest])
+                {
+                    visited[dest] = true;
+                    if(nowedge.flow == nowedge.meta.capacity)
+                        found.Add(nowedge);
+                    else
+                        dfsstack.Push(dest);                    
+                    
+                }
+                dest = nowedge.meta.from.GetComponent<FordFulkersonVertex>(); // 反向也算
+                if(!visited[dest])
+                {
+                    visited[dest] = true;
+                    if(nowedge.flow == nowedge.meta.capacity)
+                        found.Add(nowedge);
+                    else
+                        dfsstack.Push(dest); 
+                }
+            }            
+        }
+        return found;
     }
 }

@@ -13,9 +13,12 @@ public class GameManager : MonoBehaviour
     public GameObject vertexPrefab;
     public GameObject edgePrefab;
 
-    [Header("Variables")]
+    [Header("GO Variables")]
     public InputField inputField;
     public Rect boundries;    
+    public Text[] text_lt;
+    public Text text_rb;
+
 
     [Header("Runtime")]
     public Dictionary<int, Vertex> vertices = new Dictionary<int, Vertex>();
@@ -33,7 +36,9 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        foreach(Text t in text_lt)
+            t.text = "";
+        text_rb.text = "";
     }
 
     // Update is called once per frame
