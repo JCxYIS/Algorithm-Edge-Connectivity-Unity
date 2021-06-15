@@ -14,7 +14,7 @@ public class FordFulkerson : Algorithm
 
     /// <summary>
     /// [Gf] 圖(G)中，還可以容納水通過的館子的圖
-    /// 這裡直接拿 G 來用 可改進
+    /// 這裡直接拿 G 來用，有關residual都放在 vertex 裡面作為 getter (ResidualEdges)，調用好就可以直接用了
     /// </summary>
     List<FordFulkersonVertex> residualGraph = new List<FordFulkersonVertex>();
 
@@ -80,7 +80,7 @@ public class FordFulkerson : Algorithm
                 if(augmentingPath == null || augmentingPath.Count == 0)
                 {
                     Log("找不到可以增廣的 Augmenting Path，本找結束");
-                    if(totalFlow <= min_maxFlow)
+                    if(totalFlow < min_maxFlow)
                     {
                         min_maxFlow = totalFlow;                                               
                         Log($"刷新最小 max flow 為 {min_maxFlow}，藍色線為 minimum Cut");
@@ -126,7 +126,7 @@ public class FordFulkerson : Algorithm
                 yield return new WaitForSeconds(1);
             }            
         }
-        Log("演算法結束。");
+        Log("演算法結束。結果在右邊。");
         string output="==OUTPUT==\n";
         output += min_maxFlow + "\n";
         foreach(FordFulkersonEdge e in min_maxFlow_path)
@@ -134,7 +134,7 @@ public class FordFulkerson : Algorithm
             e.meta.SetColor(Color.green);
             output += e.meta.from.id + " " + e.meta.dest.id + "\n";
         }
-        LogRB($"<color=green>{output}</color>");
+        LogRB($"<color=lime>{output}</color>");
 
         // throw new System.NotImplementedException();
     }
@@ -297,13 +297,14 @@ public class FordFulkerson : Algorithm
 
         // 從源點開始沿著剩餘網路的前向弧搜索,直到找到每條路徑的第一條容量為 0 的弧, 而那些弧就會是最小割集。
         List<FordFulkersonEdge> found = new List<FordFulkersonEdge>();
-        // 找起點有visit，但連接的點沒visit過的點
+        
         foreach(FordFulkersonVertex v in residualGraph)
         {
             foreach(FordFulkersonEdge e in v.edges)
             {
                 FordFulkersonVertex dest = e.meta.dest.GetComponent<FordFulkersonVertex>();
-                if(visited[v] && !visited[dest])
+                if(visited[v] && !visited[dest] ||  // 起點有visit，但連接的點沒visit過的點
+                    (v == source && !visited[v]))   // 家門直接被塞爛
                 {
                     found.Add(e);
                 }
