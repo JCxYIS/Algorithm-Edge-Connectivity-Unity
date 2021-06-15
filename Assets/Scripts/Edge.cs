@@ -43,6 +43,8 @@ public class Edge : MonoBehaviour
     /// </summary>
     public int capacity => weight;
 
+    public override string ToString() => gameObject.name;
+
 
     /// <summary>
     /// Start is called on the frame when a script is enabled just before

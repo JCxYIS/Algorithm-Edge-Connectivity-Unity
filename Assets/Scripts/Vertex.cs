@@ -11,6 +11,7 @@ public class Vertex : MonoBehaviour
     public Color color;
 
     Rect boundries => GameManager.Instance.boundries;
+    public override string ToString() => gameObject.name;
     SpriteRenderer spriteRenderer;
     TextMesh id_text;
 

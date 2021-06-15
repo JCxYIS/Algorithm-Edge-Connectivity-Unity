@@ -54,7 +54,7 @@ public class FordFulkerson : Algorithm
             // residualGraph = FindResidualGraph();
 
             
-            
+        // O(n) max flow computations are sufficient for finding a min cut. (ex. 26.2-11)
         // Fix a node v, iterating all possible w != v and compute maximum flow
         Log($"鎖定點 {residualGraph[0]} 為出發點，尋找其至每個點的 Max Flow / Min Cut");
         int max_maxFlow = 0;        
@@ -78,7 +78,7 @@ public class FordFulkerson : Algorithm
                 augmentingPath = FindArgumentingPath(residualGraph[0], residualGraph[i]);
 
                 // if desnt exists p, say bye
-                if(augmentingPath.Count == 0)
+                if(augmentingPath == null || augmentingPath.Count == 0)
                 {
                     Log("找不到可以增廣的 Augmenting Path，本找結束");
                     if(totalFlow > max_maxFlow)
@@ -95,7 +95,12 @@ public class FordFulkerson : Algorithm
                 }
                 else
                 {
-                    augmentingPath.ForEach(e=>e.meta.SetColor(Color.magenta));
+                    string log = "為 ";                
+                    augmentingPath.ForEach(e=>{
+                        e.meta.SetColor(Color.magenta);
+                        log += e.ToString()+" ";
+                    });
+                    Log(log);
                     yield return new WaitForSeconds(1);
                     augmentingPath.ForEach(e=>e.meta.SetColor(Color.white));
                 }
@@ -142,26 +147,84 @@ public class FordFulkerson : Algorithm
     List<FordFulkersonEdge> FindArgumentingPath(FordFulkersonVertex source, FordFulkersonVertex sink)
     {        
         List<FordFulkersonEdge> result = new List<FordFulkersonEdge>();
-        result = DFSFindPath(source, sink, result);
+        result = BFSFindPath(source, sink);
         return result;
     }
 
-    List<FordFulkersonEdge> DFSFindPath(FordFulkersonVertex source, FordFulkersonVertex sink, List<FordFulkersonEdge> currentPath)
+    /// <summary>
+    /// 在Ford Fulkson 使用 BFS 就是 Edmond Karp
+    /// </summary>
+    List<FordFulkersonEdge> BFSFindPath(FordFulkersonVertex source, FordFulkersonVertex sink)
     {
+
+        // bfs for software engineers!
+        Queue<FordFulkersonVertex> bfsqueue = new Queue<FordFulkersonVertex>();
+        bfsqueue.Enqueue(source);
+
+        // 在BFS時，某點是從哪個點爬過來的？
+        Dictionary<FordFulkersonVertex, FordFulkersonEdge> parent = new Dictionary<FordFulkersonVertex, FordFulkersonEdge>();
+
+        // visited dict
+        Dictionary<FordFulkersonVertex, bool> visited = new Dictionary<FordFulkersonVertex, bool>();
+        foreach(var v in residualGraph)
+        {
+            visited.Add(v, false);
+        }
+
+        // loop
+        while(bfsqueue.Count != 0)
+        {
+            FordFulkersonVertex now = bfsqueue.Dequeue();
+            foreach(FordFulkersonEdge nowedge in now.ResidualEdges)
+            {
+                FordFulkersonVertex dest = nowedge.meta.dest.GetComponent<FordFulkersonVertex>();
+                if(!visited[dest])
+                {
+                    visited[dest] = true;
+                    parent[dest] = nowedge;
+                    bfsqueue.Enqueue(dest);
+                }
+            }            
+        }
+
+        // sink 沿著 parent 爬回來
+        if(!parent.ContainsKey(sink))
+            return null;
+        List<FordFulkersonEdge> path = new List<FordFulkersonEdge>();
+        for(FordFulkersonVertex now = sink; now != source; )
+        {
+            path.Add(parent[now]);
+            now = parent[now].meta.from.GetComponent<FordFulkersonVertex>();
+        }
+        return path;
+    }
+
+    /// <summary>
+    /// 也做了 DFS，後來發現藥用 Edmond Karp...
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="sink"></param>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    List<FordFulkersonEdge> DFSFindPath(FordFulkersonVertex source, FordFulkersonVertex sink, List<FordFulkersonEdge> path)
+    {
+        // 已經到終點了
         if(source == sink)
-            return currentPath;
+            return path;
         
+        // 找 source 所有能出去的 edge
         foreach(FordFulkersonEdge e in source.ResidualEdges)
         {
-            if(!currentPath.Contains(e))
+            if(!path.Contains(e)) // 不是 back edge
             {
-                currentPath.Add(e);
-                currentPath = DFSFindPath(e.meta.dest.GetComponent<FordFulkersonVertex>(), sink, currentPath);
-                return currentPath;
+                path.Add(e);
+                path = DFSFindPath(e.meta.dest.GetComponent<FordFulkersonVertex>(), sink, path); // DFS，讓下一個點遞迴                
+                return path; // 可能是 null
             }
         }
 
-        return currentPath;
+        // 找不到能出去的 edge
+        return null;
     }
 
     /// <summary>
