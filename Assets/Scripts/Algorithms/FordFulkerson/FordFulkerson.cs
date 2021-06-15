@@ -80,7 +80,7 @@ public class FordFulkerson : Algorithm
                 if(augmentingPath == null || augmentingPath.Count == 0)
                 {
                     Log("找不到可以增廣的 Augmenting Path，本找結束");
-                    if(totalFlow < min_maxFlow)
+                    if(totalFlow <= min_maxFlow)
                     {
                         min_maxFlow = totalFlow;                                               
                         Log($"刷新最小 max flow 為 {min_maxFlow}，藍色線為 minimum Cut");
@@ -91,7 +91,7 @@ public class FordFulkerson : Algorithm
                     }
                     else
                     {
-                        Log($"max flow 為 {totalFlow}");
+                        Log($"max flow 為 {totalFlow}，未刷新");
                     }
                     LogRB(totalFlow+"/"+min_maxFlow);
                     yield return new WaitForSeconds(1);
@@ -119,7 +119,7 @@ public class FordFulkerson : Algorithm
                 foreach(FordFulkersonEdge e in augmentingPath) // foreach edge e in p
                 {
                     e.flow += cfp; // cf(u, v) -= Cf(p)
-                    // // cf(v, u) += Cf(p)
+                    e.meta.dest.edges.Find(e2=>e2.dest == e.meta.from).GetComponent<FordFulkersonEdge>().flow -= cfp;// // cf(v, u) += Cf(p)
                 }                
 
                 Log("找下一個路徑");
@@ -127,11 +127,12 @@ public class FordFulkerson : Algorithm
             }            
         }
         Log("演算法結束。");
-        string output="";
-        output += min_maxFlow;
+        string output="==OUTPUT==\n";
+        output += min_maxFlow + "\n";
         foreach(FordFulkersonEdge e in min_maxFlow_path)
         {
             e.meta.SetColor(Color.green);
+            output += e.meta.from.id + " " + e.meta.dest.id + "\n";
         }
         LogRB($"<color=green>{output}</color>");
 
@@ -195,13 +196,13 @@ public class FordFulkerson : Algorithm
                     parent[dest] = nowedge;
                     bfsqueue.Enqueue(dest);
                 }
-                dest = nowedge.meta.from.GetComponent<FordFulkersonVertex>(); // 反向也算
-                if(!visited[dest])
-                {
-                    visited[dest] = true;
-                    parent[dest] = nowedge;
-                    bfsqueue.Enqueue(dest);
-                }
+                // dest = nowedge.meta.from.GetComponent<FordFulkersonVertex>(); // 反向也算
+                // if(!visited[dest])
+                // {
+                //     visited[dest] = true;
+                //     parent[dest] = nowedge;
+                //     bfsqueue.Enqueue(dest);
+                // }
             }            
         }
 
@@ -270,9 +271,7 @@ public class FordFulkerson : Algorithm
         // dfs for software engineers!
         Stack<FordFulkersonVertex> dfsstack = new Stack<FordFulkersonVertex>();
         dfsstack.Push(source);
-
-        // 從源點開始沿著剩餘網路的前向弧搜索,直到找到每條路徑的第一條容量為 0 的弧, 而那些弧就會是最小割集。
-        List<FordFulkersonEdge> found = new List<FordFulkersonEdge>();
+        
 
         // visited dict
         Dictionary<FordFulkersonVertex, bool> visited = new Dictionary<FordFulkersonVertex, bool>();
@@ -285,29 +284,32 @@ public class FordFulkerson : Algorithm
         while(dfsstack.Count != 0)
         {
             FordFulkersonVertex now = dfsstack.Pop();
-            foreach(FordFulkersonEdge nowedge in now.edges)
+            foreach(FordFulkersonEdge nowedge in now.ResidualEdges) // 沿著還沒滿的管子走
             {
                 FordFulkersonVertex dest = nowedge.meta.dest.GetComponent<FordFulkersonVertex>();
                 if(!visited[dest])
                 {
                     visited[dest] = true;
-                    if(nowedge.flow == nowedge.meta.capacity)
-                        found.Add(nowedge);
-                    else
-                        dfsstack.Push(dest);                    
-                    
+                    dfsstack.Push(dest);
                 }
-                dest = nowedge.meta.from.GetComponent<FordFulkersonVertex>(); // 反向也算
-                if(!visited[dest])
-                {
-                    visited[dest] = true;
-                    if(nowedge.flow == nowedge.meta.capacity)
-                        found.Add(nowedge);
-                    else
-                        dfsstack.Push(dest); 
-                }
-            }            
+            }           
         }
+
+        // 從源點開始沿著剩餘網路的前向弧搜索,直到找到每條路徑的第一條容量為 0 的弧, 而那些弧就會是最小割集。
+        List<FordFulkersonEdge> found = new List<FordFulkersonEdge>();
+        // 找起點有visit，但連接的點沒visit過的點
+        foreach(FordFulkersonVertex v in residualGraph)
+        {
+            foreach(FordFulkersonEdge e in v.edges)
+            {
+                FordFulkersonVertex dest = e.meta.dest.GetComponent<FordFulkersonVertex>();
+                if(visited[v] && !visited[dest])
+                {
+                    found.Add(e);
+                }
+            }
+        }
+
         return found;
     }
 }

@@ -44,7 +44,13 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(Input.GetKey(KeyCode.Space))
+            Time.timeScale = 3;
+        else if(Input.GetKey(KeyCode.LeftShift))
+            Time.timeScale = 0.33f;
+        else
+            Time.timeScale = 1;
+
     }
 
     private void Clear()
@@ -90,7 +96,9 @@ public class GameManager : MonoBehaviour
                 }
              
                 // Debug.Log("Create Edge ");
+                // undirected; create both
                 CreateEdge(from, dest);                
+                CreateEdge(dest, from);                
             }
         }
         catch(Exception e)
@@ -119,7 +127,7 @@ public class GameManager : MonoBehaviour
         g.name = $"Edge {from}-{dest}";
 
         Edge e = g.GetComponent<Edge>();
-        e.Init(false, vertices[from], vertices[dest], 1); // TODO 如果這個project有要繼續下去的話，這裡要改 
+        e.Init(vertices[from], vertices[dest], 1); // 1: undirected 
         edges.Add(e);
 
         Debug.Log($"Create {g.name}");

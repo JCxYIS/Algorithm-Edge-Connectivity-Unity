@@ -5,7 +5,20 @@ using UnityEngine;
 public class Vertex : MonoBehaviour
 {
     public int id;
+
+    /// <summary>
+    /// 指出去的 edges
+    /// </summary>
+    /// <typeparam name="Edge"></typeparam>
+    /// <returns></returns>
     public List<Edge> edges = new List<Edge>();
+
+    /// <summary>
+    /// 被指向的 edges
+    /// </summary>
+    /// <typeparam name="Edge"></typeparam>
+    /// <returns></returns>
+    public List<Edge> reverseEdges = new List<Edge>();
 
 
     public Color color;
@@ -30,9 +43,21 @@ public class Vertex : MonoBehaviour
         spriteRenderer.color = color;
     }
 
-    public void AddEdge(Edge dest)
+    public void AddEdge(Edge edge)
     {
-        edges.Add(dest);
+        edges.Add(edge);
+
+        Edge reverseEdge = edge.dest.edges.Find(e=>e.dest == this);
+        if(reverseEdge != null && edge.offsetY == 0) // bi-directional
+        {
+            edge.SetOffsetY(1);
+            reverseEdge.SetOffsetY(-1);
+        }
+    }
+
+    public void AddReverseEdge(Edge edge)
+    {
+        reverseEdges.Add(edge);
     }
 
     public void SetRandomPos()

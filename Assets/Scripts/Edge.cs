@@ -7,9 +7,9 @@ public class Edge : MonoBehaviour
 {
     // Algo var
     /// <summary>
-    /// 是否帶有方向？
+    /// 是否帶有方向？ ALWAYS TRUE NOW
     /// </summary>
-    public bool isDirected {get; protected set;}
+    // public bool isDirected {get; protected set;}
     
     /// <summary>
     /// 起點
@@ -32,10 +32,12 @@ public class Edge : MonoBehaviour
     public enum Behavior {Idle, Flash}
     public Behavior behavior = Behavior.Idle;
     public Color color = Color.white;
+    public short offsetY = 0;
 
     // GAME OBJECTS
     LineRenderer lineRenderer;
-    [HideInInspector] public TextMesh weight_Text;
+    public TextMesh weight_Text;
+    public SpriteRenderer arrow_sprite;
 
 
     /// <summary>
@@ -54,34 +56,51 @@ public class Edge : MonoBehaviour
     {
         lineRenderer = GetComponent<LineRenderer>();
         weight_Text = transform.GetChild(0).GetComponent<TextMesh>();
+        arrow_sprite = transform.GetChild(1).GetComponent<SpriteRenderer>();
     }
     // Update is called once per frame
     void Update()
     {
-        lineRenderer.SetPosition(0, from.transform.position);
-        lineRenderer.SetPosition(1, dest.transform.position);
+        Vector3 pos1 = from.transform.position + (Vector3.right + Vector3.up) * offsetY * 0.1f;
+        Vector3 pos2 = dest.transform.position + (Vector3.right + Vector3.up) * offsetY * 0.1f;
+        lineRenderer.SetPosition(0, pos1);
+        lineRenderer.SetPosition(1, pos2);
+        // arrow_sprite.transform.position = Vector3.Lerp(pos1, pos2, 0.87f);
+        
+        arrow_sprite.transform.rotation = Quaternion.identity;
+        arrow_sprite.transform.Rotate(transform.position, Vector3.Angle(pos1, pos2));
+        
         lineRenderer.startColor = color;
         lineRenderer.endColor = color;
         
-        // TODO directed
 
-        weight_Text.transform.position = (from.transform.position + dest.transform.position) / 2f + Vector3.up * 0.48763f;
+        weight_Text.transform.position = (from.transform.position + dest.transform.position) / 2f + Vector3.up * offsetY * 0.48763f;
         weight_Text.text = weight.ToString();
         weight_Text.color = color;
     }
 
 
 
-    public void Init(bool directed, Vertex from, Vertex dest, int weight = 1)
+    public void Init(Vertex from, Vertex dest, int weight = 1)
     {
-        this.isDirected = directed;
+        // this.isDirected = directed;
         this.from = from;
         this.dest = dest;
         this.weight = weight;
 
         from.AddEdge(this);        
-        if(!isDirected)
-            dest.AddEdge(this);
+        dest.AddReverseEdge(this);
+        // if(!isDirected)
+        //     dest.AddEdge(this);
+    }
+
+    /// <summary>
+    /// -1~1
+    /// </summary>
+    /// <param name="offsetY"></param>
+    public void SetOffsetY(short offsetY)
+    {
+        this.offsetY = offsetY;
     }
 
     public void SetColor(Color color)
