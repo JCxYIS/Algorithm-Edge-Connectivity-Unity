@@ -21,7 +21,7 @@ public class Vertex : MonoBehaviour
     public List<Edge> reverseEdges = new List<Edge>();
 
 
-    public Color color;
+    [HideInInspector] public Color color = Color.white;
 
     Rect boundries => GameManager.Instance.boundries;
     public override string ToString() => gameObject.name;
@@ -71,10 +71,10 @@ public class Vertex : MonoBehaviour
         // FIXME for 測資用
         switch(id)
         {
-            case 1: transform.position = new Vector3(-18.21f, 1.45f, 0); break;
-            case 2: transform.position = new Vector3(-15.37f, 0.86f, 0); break;
-            case 3: transform.position = new Vector3(-18.13f, -3.66f, 0); break;
-            case 4: transform.position = new Vector3(-15.18f, -2.74f); break;
+            case 1: transform.position = new Vector3(-16.21f, 1.45f, 0); break;
+            case 2: transform.position = new Vector3(-14.37f, 0.86f, 0); break;
+            case 3: transform.position = new Vector3(-16.13f, -3.66f, 0); break;
+            case 4: transform.position = new Vector3(-14.18f, -2.74f); break;
             case 5: transform.position = new Vector3(-11.93f, 1.28f, 0); break;
             case 6: transform.position = new Vector3(-8.08f, 1.12f, 0); break;
             case 7: transform.position = new Vector3(-12.38f, -2.78f, 0); break;

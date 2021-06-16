@@ -67,7 +67,7 @@ public class Edge : MonoBehaviour
         lineRenderer.SetPosition(1, pos2);
         // arrow_sprite.transform.position = Vector3.Lerp(pos1, pos2, 0.87f);
 
-        // TODO arrow and that stuffs
+        // TODO arrow and distance betwwen two reversed edge, stuffs like dat...
         // arrow_sprite.transform.rotation = Quaternion.identity;
         // arrow_sprite.transform.Rotate(transform.position, Vector3.Angle(pos1, pos2));
         

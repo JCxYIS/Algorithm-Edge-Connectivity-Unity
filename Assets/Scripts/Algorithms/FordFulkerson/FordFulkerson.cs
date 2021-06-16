@@ -217,9 +217,7 @@ public class FordFulkerson : Algorithm
         for(FordFulkersonVertex now = sink; now != source; )
         {
             path.Add(parent[now]);
-            now = parent[now].meta.from == now.meta ? 
-                parent[now].meta.dest.GetComponent<FordFulkersonVertex>() :
-                parent[now].meta.from.GetComponent<FordFulkersonVertex>();
+            now = parent[now].meta.from.GetComponent<FordFulkersonVertex>();
         }
         return path;
     }
