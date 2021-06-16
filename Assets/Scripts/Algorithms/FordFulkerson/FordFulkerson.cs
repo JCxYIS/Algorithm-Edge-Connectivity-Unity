@@ -43,14 +43,16 @@ public class FordFulkerson : Algorithm
 
     protected override IEnumerator Play()
     {        
-        Log("讓我們開始吧");
+         
+        yield return Log("讓我們開始吧");
         
         // find Gf 
         // residualGraph = FindResidualGraph();
             
         // O(n) max flow computations are sufficient for finding a min cut. (ex. 26.2-11)
         // Fix a node v, iterating all possible w != v and compute maximum flow
-        Log($"鎖定點 {residualGraph[0]} 為出發點，尋找其至每個點的 Max Flow / Min Cut");
+         
+        yield return Log($"鎖定點 {residualGraph[0]} 為出發點，尋找其至每個點的 Max Flow / Min Cut");
         int min_maxFlow = int.MaxValue; 
         List<FordFulkersonEdge> min_maxFlow_path = null;       
         for(int i = 0; i < residualGraph.Count; i++)
@@ -66,24 +68,25 @@ public class FordFulkerson : Algorithm
             totalFlow = 0;
             residualGraph[0].meta.SetColor(Color.green);
             residualGraph[i].meta.SetColor(Color.red);
-            LogRB("-/"+min_maxFlow);
-            yield return new WaitForSeconds(1);
-            
+            LogRB("-/"+min_maxFlow);            
 
-            Log($"第 {i}/{residualGraph.Count-1} 輪！{residualGraph[0]} 至 {residualGraph[i]}");
+             
+            yield return Log($"第 {i}/{residualGraph.Count-1} 輪！{residualGraph[0]} 至 {residualGraph[i]}");
             while(true) // exists p in Gf
             {
-                Log($"尋找 {residualGraph[0]} 至 {residualGraph[i]} 的 Augmenting Path");
+                yield return Log($"尋找 {residualGraph[0]} 至 {residualGraph[i]} 的 Augmenting Path");
                 augmentingPath = FindArgumentingPath(residualGraph[0], residualGraph[i]);
 
                 // if desnt exists p, say bye
                 if(augmentingPath == null || augmentingPath.Count == 0)
                 {
-                    Log("找不到可以增廣的 Augmenting Path，本找結束");
+                     
+                    yield return Log("找不到可以增廣的 Augmenting Path，本找結束");
                     if(totalFlow < min_maxFlow)
                     {
                         min_maxFlow = totalFlow;                                               
-                        Log($"刷新最小 max flow 為 {min_maxFlow}，藍色線為 minimum Cut");
+                         
+                        yield return Log($"刷新最小 max flow 為 {min_maxFlow}，藍色線為 minimum Cut");
                         min_maxFlow_path = DFSFindMinimumCut(residualGraph[0], residualGraph[i]);
                         min_maxFlow_path.ForEach(e=>{
                             e.meta.SetColor(Color.blue);
@@ -91,8 +94,10 @@ public class FordFulkerson : Algorithm
                     }
                     else
                     {
-                        Log($"max flow 為 {totalFlow}，未刷新");
+                         
+                        yield return Log($"max flow 為 {totalFlow}，未刷新");
                     }
+                     
                     LogRB(totalFlow+"/"+min_maxFlow);
                     yield return new WaitForSeconds(1);
                     break;
@@ -104,17 +109,15 @@ public class FordFulkerson : Algorithm
                         e.meta.SetColor(Color.magenta);
                         log += e.ToString()+" ";
                     });
-                    Log(log);
-                    yield return new WaitForSeconds(1);
+                    yield return Log(log);
                     augmentingPath.ForEach(e=>e.meta.SetColor(Color.white));
                 }
 
-                // find smallest capacity
-                Log("尋找 Augmenting Path 途中最小的管徑");
+                // find smallest capacity                
+                yield return Log("尋找 Augmenting Path 途中最小的管徑");
                 int cfp = FindSmallestCapacity(augmentingPath); // Cf(p) = smallest capcity on p
-                yield return new WaitForSeconds(1);
-
-                Log($"把沿途所經的路徑流量、以及總流量，全部加上此值 {cfp}");
+                 
+                yield return Log($"把沿途所經的路徑流量以及總流量，全部加上此值 {cfp}，反向則減掉此值");
                 totalFlow += cfp; // Fm += Cf(p)
                 foreach(FordFulkersonEdge e in augmentingPath) // foreach edge e in p
                 {
@@ -122,11 +125,11 @@ public class FordFulkerson : Algorithm
                     e.meta.dest.edges.Find(e2=>e2.dest == e.meta.from).GetComponent<FordFulkersonEdge>().flow -= cfp;// // cf(v, u) += Cf(p)
                 }                
 
-                Log("找下一個路徑");
-                yield return new WaitForSeconds(1);
+                 
+                yield return Log("找下一個路徑");
             }            
         }
-        Log("演算法結束。結果在右邊。");
+         
         string output="==OUTPUT==\n";
         output += min_maxFlow + "\n";
         foreach(FordFulkersonEdge e in min_maxFlow_path)
@@ -135,6 +138,7 @@ public class FordFulkerson : Algorithm
             output += e.meta.from.id + " " + e.meta.dest.id + "\n";
         }
         LogRB($"<color=lime>{output}</color>");
+        yield return Log("演算法結束。結果在右邊。");
 
         // throw new System.NotImplementedException();
     }

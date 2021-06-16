@@ -66,9 +66,10 @@ public class Edge : MonoBehaviour
         lineRenderer.SetPosition(0, pos1);
         lineRenderer.SetPosition(1, pos2);
         // arrow_sprite.transform.position = Vector3.Lerp(pos1, pos2, 0.87f);
-        
-        arrow_sprite.transform.rotation = Quaternion.identity;
-        arrow_sprite.transform.Rotate(transform.position, Vector3.Angle(pos1, pos2));
+
+        // TODO arrow and that stuffs
+        // arrow_sprite.transform.rotation = Quaternion.identity;
+        // arrow_sprite.transform.Rotate(transform.position, Vector3.Angle(pos1, pos2));
         
         lineRenderer.startColor = color;
         lineRenderer.endColor = color;

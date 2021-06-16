@@ -29,7 +29,7 @@ public abstract class Algorithm : MonoBehaviour
         StartCoroutine(Play());
     }
 
-    protected void Log(string log)
+    protected IEnumerator Log(string log)
     {
         Debug.Log($"<color=cyan>{log}</color>");
 
@@ -38,6 +38,7 @@ public abstract class Algorithm : MonoBehaviour
             text_lt[i].text = text_lt[i-1].text;
         }
         text_lt[0].text = log;
+        yield return new WaitForSeconds(1);
     }
 
     protected void LogRB(string text)
